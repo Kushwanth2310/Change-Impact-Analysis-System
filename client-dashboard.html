@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Dashboard - CIAS</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .client-dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .welcome-section h1 {
+            color: #333;
+            margin: 0;
+        }
+
+        .welcome-section p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .section-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .change-requests-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .request-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .request-item.high-priority {
+            border-left-color: #e74c3c;
+        }
+
+        .request-item.medium-priority {
+            border-left-color: #f39c12;
+        }
+
+        .request-item.low-priority {
+            border-left-color: #27ae60;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .request-id {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .request-priority {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .priority-high {
+            background: #e74c3c;
+        }
+
+        .priority-medium {
+            background: #f39c12;
+        }
+
+        .priority-low {
+            background: #27ae60;
+        }
+
+        .request-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .request-description {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .error-message, .success-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            border: 1px solid #fcc;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #060;
+            border: 1px solid #cfc;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .priority-select {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="client-dashboard">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="welcome-section">
+                    <h1 id="clientWelcome">Welcome, Client</h1>
+                    <p>Change Request Management Portal</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRequests">0</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingRequests">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="approvedRequests">0</div>
+                    <div class="stat-label">Approved</div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- New Change Request Form -->
+                <div class="section-card">
+                    <h2 class="section-title">Submit New Change Request</h2>
+                    
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="successMessage" class="success-message"></div>
+                    
+                    <form id="changeRequestForm">
+                        <div class="form-group">
+                            <label for="changeType">Change Type</label>
+                            <select id="changeType" required>
+                                <option value="">Select change type</option>
+                                <option value="feature">New Feature</option>
+                                <option value="bug_fix">Bug Fix</option>
+                                <option value="enhancement">Enhancement</option>
+                                <option value="documentation">Documentation</option>
+                                <option value="security">Security</option>
+                                <option value="performance">Performance</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" placeholder="Please describe the change request in detail..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="priority">Priority</label>
+                            <select id="priority" name="priority" required>
+                                <option value="">Select priority</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label for="requestedBy">Requested By</label>
+                                <input type="text" id="requestedBy" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="submissionDate">Date of Submission</label>
+                                <input type="date" id="submissionDate" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                            <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                            <button type="submit" class="btn btn-primary">Submit Request</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Recent Change Requests -->
+                <div class="section-card">
+                    <h2 class="section-title">Your Recent Change Requests</h2>
+                    <div class="change-requests-list" id="requestsList">
+                        <!-- Change requests will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="security.js"></script>
+    <script src="userStorage.js"></script>
+    <script src="changeRequest.js"></script>
+    <script src="client-dashboard.js"></script>
+
+</body>
+</html>
