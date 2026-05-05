@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Requests - CIAS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CIAS Requests Test</h1>
+        
+        <div class="section">
+            <h3>Test Request Storage</h3>
+            <button class="btn" onclick="testRequestStorage()">Test Request Storage</button>
+            <button class="btn" onclick="createTestRequest()">Create Test Request</button>
+            <button class="btn" onclick="clearAllRequests()">Clear All Requests</button>
+            <div id="storageResult" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>Current Requests</h3>
+            <button class="btn" onclick="loadAndDisplayRequests()">Load & Display Requests</button>
+            <div id="requestsResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test request storage and loading
+        function testRequestStorage() {
+            const result = document.getElementById('storageResult');
+            
+            try {
+                // Test localStorage
+                const storageKey = 'cias_change_requests';
+                const requests = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                
+                result.innerHTML = `
+                    <strong>Storage Key:</strong> ${storageKey}<br>
+                    <strong>Raw Data:</strong> ${JSON.stringify(requests, null, 2)}<br>
+                    <strong>Request Count:</strong> ${requests.length}<br>
+                    <strong>Sample Request:</strong> ${requests.length > 0 ? JSON.stringify(requests[0], null, 2) : 'None'}<br>
+                    <strong>Storage Available:</strong> ${typeof localStorage.getItem(storageKey) !== 'undefined' ? 'Yes' : 'No'}
+                `;
+            } catch (error) {
+                result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        function createTestRequest() {
+            const result = document.getElementById('storageResult');
+            
+            try {
+                // Create a test request
+                const testRequest = {
+                    id: 'TEST-' + Date.now(),
+                    changeType: 'feature',
+                    description: 'Test change request for debugging',
+                    priority: 'high',
+                    requestedBy: 'Test User',
+                    dateOfSubmission: new Date().toISOString().split('T')[0],
+                    userId: 'test-user-id',
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Save to localStorage
+                const storageKey = 'cias_change_requests';
+                const existingRequests = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                existingRequests.push(testRequest);
+                localStorage.setItem(storageKey, JSON.stringify(existingRequests));
+                
+                result.innerHTML = `
+                    <strong>Test Request Created:</strong><br>
+                    ID: ${testRequest.id}<br>
+                    Type: ${testRequest.changeType}<br>
+                    Status: ${testRequest.status}<br>
+                    <strong>Total Requests:</strong> ${existingRequests.length}
+                `;
+                
+                // Reload display
+                loadAndDisplayRequests();
+                
+            } catch (error) {
+                result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        function clearAllRequests() {
+            const result = document.getElementById('storageResult');
+            
+            try {
+                const storageKey = 'cias_change_requests';
+                localStorage.removeItem(storageKey);
+                result.innerHTML = '<strong>All requests cleared from storage</strong>';
+                
+                // Reload display
+                loadAndDisplayRequests();
+                
+            } catch (error) {
+                result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        function loadAndDisplayRequests() {
+            const result = document.getElementById('requestsResult');
+            
+            try {
+                const storageKey = 'cias_change_requests';
+                const requests = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                
+                if (requests.length === 0) {
+                    result.innerHTML = '<strong>No requests found in storage</strong>';
+                } else {
+                    let html = '<strong>Found ' + requests.length + ' requests:</strong><br><br>';
+                    
+                    requests.forEach((request, index) => {
+                        html += `
+                            <div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-left: 3px solid #667eea;">
+                                <strong>${index + 1}.</strong> ${request.id}<br>
+                                <strong>Type:</strong> ${request.changeType}<br>
+                                <strong>Status:</strong> ${request.status}<br>
+                                <strong>Requested By:</strong> ${request.requestedBy}<br>
+                                <strong>Date:</strong> ${request.dateOfSubmission}<br>
+                                <strong>User ID:</strong> ${request.userId}
+                            </div>
+                        `;
+                    });
+                    
+                    result.innerHTML = html;
+                }
+                
+            } catch (error) {
+                result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        // Auto-load on page load
+        window.onload = function() {
+            testRequestStorage();
+            loadAndDisplayRequests();
+        };
+    </script>
+</body>
+</html>
