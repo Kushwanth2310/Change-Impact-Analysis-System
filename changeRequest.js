@@ -11,7 +11,52 @@ class ChangeRequestSystem {
     initializeStorage() {
         if (!localStorage.getItem(this.storageKey)) {
             localStorage.setItem(this.storageKey, JSON.stringify([]));
+            this.createSampleChangeRequests();
         }
+    }
+
+    // Create sample change requests for testing
+    createSampleChangeRequests() {
+        const sampleRequests = [
+            {
+                id: 'CR-SAMPLE-001',
+                changeType: 'security',
+                description: 'Implement user authentication and authorization system with secure password handling',
+                priority: 'high',
+                requestedBy: 'john_client',
+                dateOfSubmission: '2026-05-01T10:00:00Z',
+                userId: 'client_001',
+                status: 'pending',
+                createdAt: '2026-05-01T10:00:00Z',
+                updatedAt: '2026-05-01T10:00:00Z'
+            },
+            {
+                id: 'CR-SAMPLE-002',
+                changeType: 'feature',
+                description: 'Add payment processing functionality with multiple payment gateway support',
+                priority: 'medium',
+                requestedBy: 'jane_client',
+                dateOfSubmission: '2026-05-02T14:30:00Z',
+                userId: 'client_002',
+                status: 'pending',
+                createdAt: '2026-05-02T14:30:00Z',
+                updatedAt: '2026-05-02T14:30:00Z'
+            },
+            {
+                id: 'CR-SAMPLE-003',
+                changeType: 'performance',
+                description: 'Optimize database queries and implement caching for better system performance',
+                priority: 'medium',
+                requestedBy: 'bob_client',
+                dateOfSubmission: '2026-05-03T09:15:00Z',
+                userId: 'client_003',
+                status: 'pending',
+                createdAt: '2026-05-03T09:15:00Z',
+                updatedAt: '2026-05-03T09:15:00Z'
+            }
+        ];
+        
+        localStorage.setItem(this.storageKey, JSON.stringify(sampleRequests));
     }
 
     // Generate unique change ID

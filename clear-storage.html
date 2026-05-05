@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Storage - CIAS</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { background: #e74c3c; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px; }
+        button:hover { background: #c0392b; }
+        .success { background: #27ae60; color: white; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clear CIAS Storage</h1>
+        <p>This will clear all localStorage data and recreate fresh sample data.</p>
+        
+        <button onclick="clearStorage()">Clear Storage & Reload</button>
+        <button onclick="goToAnalysis()">Go to Analysis Page</button>
+        
+        <div id="message"></div>
+    </div>
+
+    <script>
+        function clearStorage() {
+            localStorage.clear();
+            document.getElementById('message').innerHTML = '<div class="success">Storage cleared! Reloading...</div>';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+        
+        function goToAnalysis() {
+            window.location.href = 'change-analysis.html?requestId=CR-SAMPLE-001';
+        }
+    </script>
+</body>
+</html>
