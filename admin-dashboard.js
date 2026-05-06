@@ -120,6 +120,21 @@ function editUser(userId) {
     document.getElementById('editEmail').value = user.email;
     document.getElementById('editRole').value = user.role;
     
+    // Handle skills if developer
+    if (user.role === 'developer' && user.skills) {
+        const skillsSelect = document.getElementById('editSkills');
+        // Clear previous selections
+        Array.from(skillsSelect.options).forEach(option => option.selected = false);
+        // Set selected skills
+        user.skills.forEach(skill => {
+            const option = Array.from(skillsSelect.options).find(opt => opt.value === skill);
+            if (option) option.selected = true;
+        });
+    }
+    
+    // Toggle skills field visibility
+    toggleEditSkillsField();
+    
     // Store user ID for form submission
     document.getElementById('editUserForm').dataset.userId = userId;
     
@@ -175,6 +190,15 @@ function saveUserChanges() {
     // Update user
     users[userIndex].fullname = fullname;
     users[userIndex].email = email;
+    
+    // Handle skills update
+    if (role === 'developer') {
+        const skillsSelect = document.getElementById('editSkills');
+        const selectedSkills = Array.from(skillsSelect.selectedOptions).map(option => option.value);
+        users[userIndex].skills = selectedSkills;
+    } else {
+        users[userIndex].skills = [];
+    }
     
     // Update role if changed
     if (users[userIndex].role !== role) {
@@ -272,6 +296,13 @@ function addNewUser() {
         role: role
     };
     
+    // Add skills if developer
+    if (role === 'developer') {
+        const skillsSelect = document.getElementById('addSkills');
+        const selectedSkills = Array.from(skillsSelect.selectedOptions).map(option => option.value);
+        userData.skills = selectedSkills;
+    }
+    
     const result = userStorage.addUser(userData);
     
     if (result.success) {
@@ -337,6 +368,30 @@ function showEditError(message) {
 function hideMessages() {
     document.getElementById('errorMessage').style.display = 'none';
     document.getElementById('successMessage').style.display = 'none';
+}
+
+// Toggle skills field based on role
+function toggleSkillsField() {
+    const roleSelect = document.getElementById('addRole');
+    const skillsFormGroup = document.getElementById('skillsFormGroup');
+    
+    if (roleSelect.value === 'developer') {
+        skillsFormGroup.style.display = 'block';
+    } else {
+        skillsFormGroup.style.display = 'none';
+    }
+}
+
+// Toggle edit skills field based on role
+function toggleEditSkillsField() {
+    const roleSelect = document.getElementById('editRole');
+    const skillsFormGroup = document.getElementById('editSkillsFormGroup');
+    
+    if (roleSelect.value === 'developer') {
+        skillsFormGroup.style.display = 'block';
+    } else {
+        skillsFormGroup.style.display = 'none';
+    }
 }
 
 // Close modal when clicking outside

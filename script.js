@@ -36,34 +36,41 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Login attempt:', { username, role: authResult.user?.role, success: authResult.success });
         
         if (authResult.success) {
-            // Success - redirect or show success message
-            const roleMessage = authResult.user.role === 'admin' ? 'Admin login successful!' : 'Login successful!';
+            const normalizedRole = authResult.user.role?.toLowerCase().trim();
+            const roleMessage = normalizedRole === 'admin' ? 'Admin login successful!' : 'Login successful!';
             showSuccess(roleMessage + ' Redirecting...');
             
+            const currentUser = {
+                ...authResult.user,
+                role: normalizedRole
+            };
+
             // Store current user session
-            sessionStorage.setItem('currentUser', JSON.stringify(authResult.user));
+            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
             
             // Simulate redirect after 1.5 seconds
             setTimeout(() => {
                 console.log('Redirecting to dashboard...');
-                console.log('Logged in user:', authResult.user);
+                console.log('Logged in user:', currentUser);
                 
-                // Redirect based on role
-                if (authResult.user.role === 'admin') {
+                // Redirect based on normalized role
+                if (normalizedRole === 'admin') {
                     console.log('Redirecting to admin dashboard...');
                     window.location.href = 'admin-dashboard.html';
-                } else if (authResult.user.role === 'client') {
+                } else if (normalizedRole === 'client') {
                     console.log('Redirecting to client dashboard...');
                     window.location.href = 'client-dashboard.html';
-                } else if (authResult.user.role === 'reviewer') {
+                } else if (normalizedRole === 'reviewer') {
                     console.log('Redirecting to reviewer dashboard...');
                     window.location.href = 'reviewer-dashboard.html';
-                } else if (authResult.user.role === 'project_manager') {
+                } else if (normalizedRole === 'project_manager') {
                     console.log('Redirecting to project manager dashboard...');
                     window.location.href = 'project-manager-dashboard.html';
+                } else if (normalizedRole === 'developer') {
+                    console.log('Redirecting to developer dashboard...');
+                    window.location.href = 'developer-dashboard.html';
                 } else {
                     console.log('Redirecting to user dashboard...');
-                    // window.location.href = 'dashboard.html';
                     showSuccess('Login successful! User dashboard coming soon...');
                 }
             }, 1500);

@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Check if user has appropriate role (reviewer or project manager)
-    if (!['reviewer', 'project_manager', 'admin'].includes(currentUser.role)) {
+    // Check if user has appropriate role (reviewer, project manager, admin, or developer)
+    if (!['reviewer', 'project_manager', 'admin', 'developer'].includes(currentUser.role)) {
         alert('Access denied. You do not have permission to view change analysis.');
         window.location.href = 'index.html';
         return;

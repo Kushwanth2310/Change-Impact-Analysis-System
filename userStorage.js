@@ -7,6 +7,10 @@ class UserStorage {
         this.initializeStorage();
     }
 
+    normalizeRole(role) {
+        return String(role || '').toLowerCase().trim();
+    }
+
     // Initialize localStorage and ensure admin user exists
     initializeStorage() {
         let users = [];
@@ -15,13 +19,16 @@ class UserStorage {
         const existingUsers = localStorage.getItem(this.storageKey);
         if (existingUsers) {
             try {
-                users = JSON.parse(existingUsers);
+                users = JSON.parse(existingUsers).map(user => ({
+                    ...user,
+                    role: this.normalizeRole(user.role)
+                }));
             } catch (error) {
                 console.error('Error parsing existing users:', error);
                 users = [];
             }
         }
-        
+
         // Check if admin user exists
         const adminExists = users.some(user => user.username === 'admin' && user.role === 'admin');
         
@@ -33,16 +40,20 @@ class UserStorage {
                 email: 'admin@cias.com',
                 username: 'admin',
                 password: this.security.hashPassword('admin123'), // Hash the password
-                role: 'admin',
+                role: this.normalizeRole('admin'),
                 createdAt: new Date().toISOString()
             };
             
             users.push(adminUser);
-            localStorage.setItem(this.storageKey, JSON.stringify(users));
             console.log('Admin user created successfully');
             
             // Log admin creation
             this.security.logAction(adminUser.id, adminUser.username, 'ADMIN_USER_CREATED', 'Default admin user created during initialization');
+        }
+        
+        // Save users if admin was created
+        if (!adminExists) {
+            localStorage.setItem(this.storageKey, JSON.stringify(users));
         }
     }
 
@@ -85,7 +96,7 @@ class UserStorage {
 
         // Validate role
         const validRoles = ['admin', 'project_manager', 'reviewer', 'developer', 'client'];
-        const userRole = userData.role || 'client'; // Default to client
+        const userRole = this.normalizeRole(userData.role || 'client'); // Default to client
         
         if (!validRoles.includes(userRole)) {
             return { success: false, message: 'Invalid role specified' };
@@ -99,6 +110,7 @@ class UserStorage {
             username: userData.username,
             password: this.security.hashPassword(userData.password), // Hash the password
             role: userRole,
+            skills: userRole === 'developer' ? (userData.skills || []) : [],
             createdAt: new Date().toISOString()
         };
 
@@ -217,12 +229,13 @@ class UserStorage {
         
         // Validate role
         const validRoles = ['admin', 'project_manager', 'reviewer', 'developer', 'client'];
-        if (!validRoles.includes(newRole)) {
+        const normalizedNewRole = this.normalizeRole(newRole);
+        if (!validRoles.includes(normalizedNewRole)) {
             this.security.logAction(updatedByUser?.id || 'system', updatedByUser?.username || 'SYSTEM', 'ROLE_UPDATE_FAILED', `Invalid role specified: ${newRole}`);
             return { success: false, message: 'Invalid role' };
         }
         
-        users[userIndex].role = newRole;
+        users[userIndex].role = normalizedNewRole;
         
         if (this.saveUsers(users)) {
             this.security.logAction(updatedByUser?.id || 'system', updatedByUser?.username || 'SYSTEM', 'ROLE_UPDATED', `User role updated: ${user.username} from ${oldRole} to ${newRole}`);
@@ -249,6 +262,52 @@ class UserStorage {
         const users = this.getUsers();
         const user = users.find(u => u.id === userId);
         return user && user.role === 'admin';
+    }
+
+    // Get developers by skills
+    getDevelopersBySkill(skill) {
+        const developers = this.getUsersByRole('developer');
+        return developers.filter(dev => dev.skills && dev.skills.includes(skill));
+    }
+
+    // Get all developers with their skills
+    getDevelopersWithSkills() {
+        const developers = this.getUsersByRole('developer');
+        return developers.map(dev => ({
+            id: dev.id,
+            fullname: dev.fullname,
+            username: dev.username,
+            email: dev.email,
+            skills: dev.skills || []
+        }));
+    }
+
+    // Update developer skills
+    updateDeveloperSkills(userId, skills, updatedByUser = null) {
+        const users = this.getUsers();
+        const userIndex = users.findIndex(u => u.id === userId);
+        
+        if (userIndex === -1) {
+            this.security.logAction(updatedByUser?.id || 'system', updatedByUser?.username || 'SYSTEM', 'SKILLS_UPDATE_FAILED', 'User not found');
+            return { success: false, message: 'User not found' };
+        }
+        
+        const user = users[userIndex];
+        
+        if (user.role !== 'developer') {
+            this.security.logAction(updatedByUser?.id || 'system', updatedByUser?.username || 'SYSTEM', 'SKILLS_UPDATE_FAILED', `User is not a developer: ${user.username}`);
+            return { success: false, message: 'Only developers can have skills assigned' };
+        }
+        
+        users[userIndex].skills = skills;
+        
+        if (this.saveUsers(users)) {
+            this.security.logAction(updatedByUser?.id || 'system', updatedByUser?.username || 'SYSTEM', 'SKILLS_UPDATED', `Developer skills updated: ${user.username}`);
+            return { success: true, message: 'Developer skills updated successfully' };
+        } else {
+            this.security.logAction(updatedByUser?.id || 'system', updatedByUser?.username || 'SYSTEM', 'SKILLS_UPDATE_FAILED', 'Failed to save user data');
+            return { success: false, message: 'Failed to update developer skills' };
+        }
     }
 }
 

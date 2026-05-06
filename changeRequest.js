@@ -53,6 +53,60 @@ class ChangeRequestSystem {
                 status: 'pending',
                 createdAt: '2026-05-03T09:15:00Z',
                 updatedAt: '2026-05-03T09:15:00Z'
+            },
+            {
+                id: 'CR-SAMPLE-004',
+                changeType: 'bug_fix',
+                description: 'Fix responsive design issues on mobile devices',
+                priority: 'high',
+                requestedBy: 'alice_client',
+                dateOfSubmission: '2026-05-04T11:00:00Z',
+                userId: 'client_004',
+                status: 'assigned',
+                createdAt: '2026-05-04T11:00:00Z',
+                updatedAt: '2026-05-04T11:00:00Z',
+                assignedTo: 'dev_001',
+                assignedToName: 'John Developer',
+                assignedAt: '2026-05-04T11:30:00Z',
+                assignedBy: 'pm_001'
+            },
+            {
+                id: 'CR-SAMPLE-005',
+                changeType: 'enhancement',
+                description: 'Add dark mode support to the application interface',
+                priority: 'low',
+                requestedBy: 'charlie_client',
+                dateOfSubmission: '2026-05-04T16:00:00Z',
+                userId: 'client_005',
+                status: 'acknowledged',
+                createdAt: '2026-05-04T16:00:00Z',
+                updatedAt: '2026-05-04T16:30:00Z',
+                assignedTo: 'dev_001',
+                assignedToName: 'John Developer',
+                assignedAt: '2026-05-04T16:15:00Z',
+                assignedBy: 'pm_001',
+                acknowledgedBy: 'dev_001',
+                acknowledgedAt: '2026-05-04T16:30:00Z'
+            },
+            {
+                id: 'CR-SAMPLE-006',
+                changeType: 'feature',
+                description: 'Implement real-time notifications system',
+                priority: 'medium',
+                requestedBy: 'diana_client',
+                dateOfSubmission: '2026-05-05T09:00:00Z',
+                userId: 'client_006',
+                status: 'in_progress',
+                createdAt: '2026-05-05T09:00:00Z',
+                updatedAt: '2026-05-05T10:00:00Z',
+                assignedTo: 'dev_002',
+                assignedToName: 'Jane Developer',
+                assignedAt: '2026-05-05T09:15:00Z',
+                assignedBy: 'pm_001',
+                acknowledgedBy: 'dev_002',
+                acknowledgedAt: '2026-05-05T09:30:00Z',
+                startedBy: 'dev_002',
+                startedAt: '2026-05-05T10:00:00Z'
             }
         ];
         
@@ -74,6 +128,12 @@ class ChangeRequestSystem {
             console.error('Error reading change requests:', error);
             return [];
         }
+    }
+
+    // Get a single change request by ID
+    getChangeRequest(requestId) {
+        const requests = this.getChangeRequests();
+        return requests.find(request => request.id === requestId) || null;
     }
 
     // Get change requests by user
@@ -400,6 +460,99 @@ class ChangeRequestSystem {
             
             return true;
         });
+    }
+
+    // Assign change request to developer
+    assignRequest(requestId, developerId, developerName, assignmentDetails = {}) {
+        const requests = this.getChangeRequests();
+        const requestIndex = requests.findIndex(r => r.id === requestId);
+        
+        if (requestIndex === -1) {
+            return { success: false, message: 'Change request not found' };
+        }
+        
+        const request = requests[requestIndex];
+        
+        // Update request with assignment information
+        requests[requestIndex] = {
+            ...request,
+            assignedTo: developerId,
+            assignedToName: developerName,
+            assignedAt: assignmentDetails.assignedAt || new Date().toISOString(),
+            assignedBy: assignmentDetails.assignedBy,
+            assignmentNotes: assignmentDetails.notes,
+            status: 'assigned', // Change status to assigned
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (this.saveRequests(requests)) {
+            this.security.logAction(
+                assignmentDetails.assignedBy || 'system', 
+                'PROJECT_MANAGER', 
+                'REQUEST_ASSIGNED', 
+                `Request ${requestId} assigned to ${developerName}`
+            );
+            return { success: true, message: 'Request assigned successfully' };
+        } else {
+            return { success: false, message: 'Failed to assign request' };
+        }
+    }
+
+    // Update request status with assignment support
+    updateRequestStatus(requestId, newStatus, updatedBy = null) {
+        const requests = this.getChangeRequests();
+        const requestIndex = requests.findIndex(r => r.id === requestId);
+        
+        if (requestIndex === -1) {
+            return { success: false, message: 'Change request not found' };
+        }
+        
+        const request = requests[requestIndex];
+        const oldStatus = request.status;
+        
+        // Update request
+        requests[requestIndex] = {
+            ...request,
+            status: newStatus,
+            updatedAt: new Date().toISOString(),
+            updatedBy: updatedBy?.id || 'system'
+        };
+        
+        // Add status-specific metadata
+        if (newStatus === 'acknowledged' && updatedBy) {
+            requests[requestIndex].acknowledgedBy = updatedBy.id;
+            requests[requestIndex].acknowledgedAt = new Date().toISOString();
+        } else if (newStatus === 'in_progress' && updatedBy) {
+            requests[requestIndex].startedBy = updatedBy.id;
+            requests[requestIndex].startedAt = new Date().toISOString();
+        } else if (newStatus === 'completed' && updatedBy) {
+            requests[requestIndex].completedBy = updatedBy.id;
+            requests[requestIndex].completedAt = new Date().toISOString();
+        }
+        
+        if (this.saveRequests(requests)) {
+            this.security.logAction(
+                updatedBy?.id || 'system', 
+                updatedBy?.username || 'SYSTEM', 
+                'STATUS_UPDATED', 
+                `Request ${requestId} status changed from ${oldStatus} to ${newStatus}`
+            );
+            return { success: true, message: 'Status updated successfully' };
+        } else {
+            return { success: false, message: 'Failed to update status' };
+        }
+    }
+
+    // Get requests assigned to a specific developer
+    getAssignedRequests(developerId) {
+        const requests = this.getChangeRequests();
+        return requests.filter(r => r.assignedTo === developerId);
+    }
+
+    // Get all assigned requests (for project managers)
+    getAssignedRequestsAll() {
+        const requests = this.getChangeRequests();
+        return requests.filter(r => r.assignedTo);
     }
 }
 
